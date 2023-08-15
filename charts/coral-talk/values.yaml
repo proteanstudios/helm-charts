@@ -1,0 +1,51 @@
+talk:
+  image:
+    repository: "coralproject/talk"
+    tag: "latest"
+  node_env: "development"
+  mongoUri:
+  redisUri:
+  debug: "*,-ioredis:*"
+  disable_embed_polyfill:
+  cache_expiry_comment_count: "1hr"
+  threading_level: "3"
+  replicas: 1
+  resources: {}
+#  Set to a url path for the avatar talk should use if one is not provided by a user
+#  defaultAvatar:
+#  jwt:
+#    secret:
+#    alg:
+#    issuer:
+#    cookieName:
+#    expiry: "2 days"
+  # Facebook values are *required* in a default talk build
+  facebook:
+    appId: "123abc"
+    appSecret: "123123"
+#  smtp:
+#    fromAddress:
+#    host:
+#    password:
+#    port:
+#    username:
+  ingress:
+    enabled: false
+    hostname:
+    tls:
+      enabled: false
+      cert_manager:
+        issuer: "letsencrypt-prod"
+  extraEnvs: []
+
+mongodb:
+  enabled: false
+  nameOverride: ""
+  mongodbUsername: ""
+  mongodbPassword: ""
+  mongodbDatabase: ""
+redis:
+  resources: {}
+  args: ["--maxmemory 1gb", "--maxmemory-policy allkeys-lfu"]
+  metrics:
+    enabled: true

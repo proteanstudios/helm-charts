@@ -1,0 +1,24 @@
+apiVersion: v1
+entries:
+  coral-talk:
+  - apiVersion: v1
+    created: "2023-08-15T11:24:39.824848+07:00"
+    dependencies:
+    - condition: redis.enabled
+      name: redis
+      repository: ""
+      version: 0.0.0
+    - condition: mongodb.enabled
+      name: mongodb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 0.4.25
+    description: Deploy a full installation of Coral Talk v4 with mongodb and redis
+    digest: e44a14c9e095cb4462f1e17ff5f95f9b1974b27f57c69c50e0c5309b9a68407c
+    maintainers:
+    - email: leo@favish.com
+      name: Leo Vuong
+    name: coral-talk
+    urls:
+    - coral-talk-1.3.3.tgz
+    version: 1.3.3
+generated: "2023-08-15T11:24:39.823438+07:00"

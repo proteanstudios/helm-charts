@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "talk.fullname" . }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+spec:
+  replicas: {{ .Values.talk.replicas }}
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: {{ template "talk.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "talk.fullname" . }}
+    spec:
+      containers:
+      - name: "talk"
+        # TODO - Create /health route
+        livenessProbe:
+          httpGet:
+            path: /static/embed.js
+            port: 3000
+          initialDelaySeconds: 60
+          periodSeconds: 5
+          failureThreshold: 3
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        image: {{ .Values.talk.image.repository }}:{{ .Values.talk.image.tag }}
+        env:
+          - name: "NODE_ENV"
+            value: {{ .Values.talk.node_env }}
+          - name: "TALK_MONGO_URL"
+            value: {{ .Values.talk.mongoUri }}
+          - name: "TALK_REDIS_URL"
+            value: {{ .Values.talk.redisUri }}
+          - name: "TALK_ROOT_URL"
+            {{- if .Values.talk.ingress.tls.enabled }}
+            value: https://{{ .Values.talk.ingress.hostname }}
+            {{- else }}
+            value: http://{{ .Values.talk.ingress.hostname }}
+            {{- end }}
+          - name: "CACHE_EXPIRY_COMMENT_COUNT"
+            value: {{ .Values.talk.cache_expiry_comment_count }}
+          - name: "TALK_THREADING_LEVEL"
+            value: {{ .Values.talk.threading_level | quote }}
+          - name: "TALK_PORT"
+            value: "3000"
+          - name: "TRUST_THRESHOLDS"
+            value: "comment:2,-9999;flag:2,-9999"
+          {{- if .Values.talk.disable_embed_polyfill }}
+          - name: "TALK_DISABLE_EMBED_POLYFILL"
+            value: "TRUE"
+          {{- end }}
+          {{- if .Values.talk.debug }}
+          - name: "DEBUG"
+            value: {{ .Values.talk.debug | quote }}
+          {{- end }}
+          - name: "TALK_FACEBOOK_APP_ID"
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "talk.fullname" . }}
+                key: "facebookAppId"
+          - name: "TALK_FACEBOOK_APP_SECRET"
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "talk.fullname" . }}
+                key: "facebookAppSecret"
+          {{- if .Values.talk.defaultAvatar }}
+          - name: "TALK_DEFAULT_AVATAR"
+            value: {{ .Values.talk.defaultAvatar }}
+          {{- end }}
+          {{- if .Values.talk.jwt }}
+          - name: "TALK_JWT_SECRET"
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "talk.fullname" . }}
+                key: "jwtSecret"
+          - name: "TALK_JWT_ALG"
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "talk.fullname" . }}
+                key: "jwtAlg"
+          - name: "TALK_JWT_ISSUER"
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "talk.fullname" . }}
+                key: "jwtIssuer"
+          - name: "TALK_JWT_COOKIE_NAME"
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "talk.fullname" . }}
+                key: "jwtCookieName"
+          - name: "TALK_JWT_EXPIRY"
+            value: {{ .Values.talk.jwt.expiry }}
+          {{- end }}
+          {{- if .Values.talk.smtp }}
+          - name: "TALK_SMTP_FROM_ADDRESS"
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "talk.fullname" . }}
+                key: "smtpFromAddress"
+          - name: "TALK_SMTP_HOST"
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "talk.fullname" . }}
+                key: "smtpHost"
+          - name: "TALK_SMTP_PASSWORD"
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "talk.fullname" . }}
+                key: "smtpPassword"
+          - name: "TALK_SMTP_PORT"
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "talk.fullname" . }}
+                key: "smtpPort"
+          - name: "TALK_SMTP_USERNAME"
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "talk.fullname" . }}
+                key: "smtpUsername"
+          {{- end }}
+          {{- if .Values.talk.extraEnvs }}
+{{ toYaml .Values.talk.extraEnvs | indent 10 }}
+          {{- end }}
+        ports:
+        - containerPort: 3000

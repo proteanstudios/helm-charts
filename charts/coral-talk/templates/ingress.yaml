@@ -1,0 +1,36 @@
+{{- if .Values.talk.ingress.enabled }}
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ template "talk.fullname" . }}
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    {{- if .Values.talk.ingress.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.talk.ingress.cert_manager.issuer }}
+    certmanager.k8s.io/cluster-issuer: {{ .Values.talk.ingress.cert_manager.issuer }}
+    {{- end }}
+    # Allow any custom necessary annotations for different envs like AWS and GKE.
+    # TODO: Consider using this generally instead of feature flags like cert_manager.enabled above for less magic
+    {{- if .Values.talk.ingress.annotations }}
+    {{ toYaml .Values.talk.ingress.annotations }}
+    {{- end }}
+spec:
+{{- if .Values.talk.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.talk.ingress.hostname | quote }}
+    secretName: "tls-secret"
+{{- end }}
+  rules:
+    - host: {{ .Values.talk.ingress.hostname | quote }}
+      http:
+        paths:
+          - backend:
+              service:
+                name: {{ template "talk.fullname" . }}
+                port: 
+                  number: 80
+            pathType: ImplementationSpecific
+
+{{- end }}

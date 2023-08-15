@@ -1,0 +1,7 @@
+apiVersion: v1
+description: Redis configured for Coral Talk
+maintainers:
+- email: dev@favish.com
+  name: Favish
+name: redis
+version: 0.0.0
